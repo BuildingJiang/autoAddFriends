@@ -32,51 +32,61 @@ function refreshNodes(){
 function clickByDesc(text){
 	console.log(getTime()+'============正在点击:'+text+'============')
 	var views=findViewByDesc(text);
-	if (views.length>0) {
-		var bounds=views[0].getAttribute('bounds');
-		result=bounds.match(/(\d+)/g);
-		var x1=parseFloat(result[0]);
-		var y1=parseFloat(result[1]);
-		var x2=parseFloat(result[2]);
-		var y2=parseFloat(result[3]);
-		var centerX=x1+(x2-x1)/2;
-		var centerY=y1+(y2-y1)/2;
-		console.log('center,centerY:'+centerX+' '+centerY)
-		shell.exec('adb shell input tap '+centerX+' '+centerY)
+	while(views.length <= 0){
+		refreshNodes();
+		views=findViewByDesc(text);
 	}
+	
+	var bounds=views[0].getAttribute('bounds');
+	result=bounds.match(/(\d+)/g);
+	var x1=parseFloat(result[0]);
+	var y1=parseFloat(result[1]);
+	var x2=parseFloat(result[2]);
+	var y2=parseFloat(result[3]);
+	var centerX=x1+(x2-x1)/2;
+	var centerY=y1+(y2-y1)/2;
+	console.log('center,centerY:'+centerX+' '+centerY)
+	shell.exec('adb shell input tap '+centerX+' '+centerY)
+	
 }
 
 function clickByText(text){
 	console.log(getTime()+'============正在点击:'+text+'============')
 	var views=findViewByText(text);
-	if (views.length>0) {
-		var bounds=views[0].getAttribute('bounds');
-		result=bounds.match(/(\d+)/g);
-		var x1=parseFloat(result[0]);
-		var y1=parseFloat(result[1]);
-		var x2=parseFloat(result[2]);
-		var y2=parseFloat(result[3]);
-		var centerX=x1+(x2-x1)/2;
-		var centerY=y1+(y2-y1)/2;
-		console.log('center,centerY:'+centerX+' '+centerY)
-		shell.exec('adb shell input tap '+centerX+' '+centerY)
+	while(views.length <= 0){
+		refreshNodes();
+		views=findViewByText(text);
 	}
+	var bounds=views[0].getAttribute('bounds');
+	result=bounds.match(/(\d+)/g);
+	var x1=parseFloat(result[0]);
+	var y1=parseFloat(result[1]);
+	var x2=parseFloat(result[2]);
+	var y2=parseFloat(result[3]);
+	var centerX=x1+(x2-x1)/2;
+	var centerY=y1+(y2-y1)/2;
+	console.log('center,centerY:'+centerX+' '+centerY)
+	shell.exec('adb shell input tap '+centerX+' '+centerY)
+	
 }
 
 
 function clickById(id){
 	var views=findViewById(id);
-	if (views.length>0) {
-		var bounds=views[0].getAttribute('bounds');
-		result=bounds.match(/(\d+)/g);
-		var x1=parseFloat(result[0]);
-		var y1=parseFloat(result[1]);
-		var x2=parseFloat(result[2]);
-		var y2=parseFloat(result[3]);
-		var centerX=x1+(x2-x1)/2;
-		var centerY=y1+(y2-y1)/2;
-		shell.exec('adb shell input tap '+centerX+' '+centerY)
+	while (views.length>0) {
+		refreshNodes();
+		views=findViewById(id);
 	}
+	var bounds=views[0].getAttribute('bounds');
+	result=bounds.match(/(\d+)/g);
+	var x1=parseFloat(result[0]);
+	var y1=parseFloat(result[1]);
+	var x2=parseFloat(result[2]);
+	var y2=parseFloat(result[3]);
+	var centerX=x1+(x2-x1)/2;
+	var centerY=y1+(y2-y1)/2;
+	shell.exec('adb shell input tap '+centerX+' '+centerY)
+	
 }
 
 function findViewByDesc(text){
@@ -154,7 +164,6 @@ function add_friend(name){
 	var wxasj = findViewByText('微信号/手机号');
 	//console.log(wxasj.length)
 	if(wxasj.length == 0){
-		console.log("==========返回啊！！！！！！！！！==========")
 		pressKey(4)    //返回
 		refreshNodes()
 	}
@@ -171,23 +180,28 @@ function add_friend(name){
 	refreshNodes()
 	sleep(500)
 	var  operationsFrequent = findViewByText('操作过于频繁，请稍后再试')
-	var views=findViewByText('添加到通讯录')
+	var views = findViewByText('添加到通讯录')
+	var woman = findViewByDesc('女');
 	if(operationsFrequent.length>0){
 		console.log("-------------------"+getTime()+"操作过于频繁，已停止操作！-------------------------");
 		console.log("-------------------"+getTime()+"已经添加到 "+name+" -------------------------");
-		sleep(99999999999999999)
-		return
+		process.exit();
+	}else if(woman.length>0){
+		console.log("==========这是个女的，不加，返回！==========")
+		pressKey(4)    //返回
+		pressKey(4)    //返回
+		return;
 	}else if (views.length>0) {
 	    console.log("==========点击设置备注和标签==========")
 		clickByText('设置备注和标签')
 		refreshNodes()
 		//判断是否包含‘税务、会计等信息’
 		var nickName = findNickClass('android.widget.EditText');
-		var remark = findViewByText('添加到通讯录')
+		var remark = findViewByText('添加更多备注信息')
 		console.log("==========昵称"+nickName+"==========")
 		
 		//sleep(999999999999)
-		if(nickName != '' && remark.length > 0 && (nickName.indexOf('税') != -1 || nickName.indexOf('会计') != -1  || nickName.indexOf('注册') != -1 || nickName.indexOf('代理') != -1  ||  nickName.indexOf('财') != -1 || nickName.indexOf('账') != -1)){
+		if( remark.length <= 0 || (nickName != '' && (nickName.indexOf('税') != -1 || nickName.indexOf('会计') != -1  || nickName.indexOf('注册') != -1 || nickName.indexOf('代理') != -1  ||  nickName.indexOf('财') != -1 || nickName.indexOf('账') != -1))){
 			pressKey(4)    //返回
 			pressKey(4)    //返回
 			pressKey(4)    //返回
@@ -222,9 +236,7 @@ function add_friend(name){
 				console.log("-------------------"+getTime()+"打招呼过于频繁，已停止操作 ！-------------------------");
 				
 				console.log("-------------------"+getTime()+"已经添加到 "+name+" -------------------------");
-				
-				sleep(99999999999999999)
-				return;
+				process.exit();
 			}
 		}
 		console.log(getTime()+"------"+name+":好友申请，发送成功");
